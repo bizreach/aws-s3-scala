@@ -34,6 +34,10 @@ private[s3scala] class LocalS3Client(dir: java.io.File) extends com.amazonaws.se
     }
 
     val putFile = new File(bucketDir, key)
+    val parentDir = putFile.getParentFile
+    if(!parentDir.exists){
+      parentDir.mkdirs()
+    }
     Files.copy(file.toPath, putFile.toPath)
 
     // TODO set correct property value
