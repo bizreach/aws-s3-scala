@@ -30,4 +30,4 @@ implicit val s3 = S3.local(new java.io.File("s3data"))
 ```
 
 Major methods are implemented in this mock, however some methods are not implemented.
-They throw `NotImplementedError` if invoked.
+These methods throw `NotImplementedError` if invoked.
