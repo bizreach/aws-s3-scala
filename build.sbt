@@ -1,4 +1,4 @@
-name := "s3-scala"
+name := "s3scala-scala"
 
 organization := "jp.co.bizreach"
 
@@ -9,7 +9,7 @@ scalaVersion := "2.11.1"
 crossScalaVersions := Seq("2.10.3", "2.11.1")
 
 libraryDependencies ++= Seq(
-  "com.github.seratch"           %% "awscala"               % "0.2.5"
+  "com.github.seratch" %% "awscala" % "0.2.5"
 )
 
 publishMavenStyle := true
@@ -27,7 +27,7 @@ publishArtifact in Test := false
 pomIncludeRepository := { _ => false }
 
 pomExtra := (
-  <url>https://github.com/bizreach/dynamodb4s</url>
+  <url>https://github.com/bizreach/s3scala-scala</url>
     <licenses>
       <license>
         <name>The Apache Software License, Version 2.0</name>
