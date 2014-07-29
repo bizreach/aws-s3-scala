@@ -26,18 +26,22 @@ private[s3scala] object IOUtils {
   }
 
   def toBytes(in: InputStream): Array[Byte] = {
-    val out = new ByteArrayOutputStream()
+    try {
+      val out = new ByteArrayOutputStream()
 
-    var length = 0
-    var buf = new Array[Byte](1024 * 8)
-    while(length != -1){
-      length = in.read(buf)
-      if(length > 0){
-        out.write(buf, 0, length)
+      var length = 0
+      var buf = new Array[Byte](1024 * 8)
+      while(length != -1){
+        length = in.read(buf)
+        if(length > 0){
+          out.write(buf, 0, length)
+        }
       }
-    }
 
-    out.toByteArray
+      out.toByteArray
+    } finally {
+      in.close()
+    }
   }
 
   def deleteDirectory(dir: File): Unit = {

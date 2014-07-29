@@ -9,7 +9,8 @@ scalaVersion := "2.11.1"
 crossScalaVersions := Seq("2.10.3", "2.11.1")
 
 libraryDependencies ++= Seq(
-  "com.github.seratch" %% "awscala" % "0.2.5"
+  "com.github.seratch" %% "awscala"   % "0.2.5",
+  "org.scalatest"      %% "scalatest" % "2.2.1-M3" % "test"
 )
 
 publishMavenStyle := true
