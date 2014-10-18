@@ -16,7 +16,9 @@ Then you can access S3 as following:
 ```scala
 import jp.co.bizreach.s3scala.S3
 import awscala.s3._
+import awscala.Region
 
+implicit val region = Region.Tokyo
 implicit val s3 = S3(accessKeyId = "xxx", secretAccessKey = "xxx")
 
 val bucket: Bucket = s3.createBucket("unique-name-xxx")
