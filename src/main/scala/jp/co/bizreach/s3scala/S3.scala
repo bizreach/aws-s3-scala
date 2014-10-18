@@ -6,7 +6,7 @@ object S3 {
     awscala.s3.S3(accessKeyId, secretAccessKey)
   }
 
-  def apply(credentials: awscala.Credentials = awscala.CredentialsLoader.load())(implicit region: awscala.Region): awscala.s3.S3 = {
+  def apply()(implicit region: awscala.Region): awscala.s3.S3 = {
     awscala.s3.S3()
   }
 
