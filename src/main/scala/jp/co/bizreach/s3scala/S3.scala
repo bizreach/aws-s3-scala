@@ -1,10 +1,8 @@
 package jp.co.bizreach.s3scala
 
-import awscala.Region
-
 object S3 {
 
-  def apply(accessKeyId: String, secretAccessKey: String)(implicit region: Region = Region.default()): awscala.s3.S3 = {
+  def apply(accessKeyId: String, secretAccessKey: String)(implicit region: awscala.Region = awscala.Region.default()): awscala.s3.S3 = {
     awscala.s3.S3(accessKeyId, secretAccessKey)
   }
 
