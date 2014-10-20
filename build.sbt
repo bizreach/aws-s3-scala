@@ -1,12 +1,10 @@
-name := "s3scala-scala"
+name := "aws-s3-scala"
 
 organization := "jp.co.bizreach"
 
 version := "0.0.2"
 
 scalaVersion := "2.11.2"
-
-crossScalaVersions := Seq("2.10.4", "2.11.2")
 
 libraryDependencies ++= Seq(
   "com.github.seratch" %% "awscala"   % "0.4.0",

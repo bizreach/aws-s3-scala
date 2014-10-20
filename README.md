@@ -8,7 +8,7 @@ Scala client for AWS S3
 Add a following dependency into your build.sbt at first.
 
 ```scala
-libraryDependencies += "jp.co.bizreach" %% "s3scala-scala" % "0.0.2"
+libraryDependencies += "jp.co.bizreach" %% "aws-s3-scala" % "0.0.2"
 ```
 
 Then you can access S3 as following:
