@@ -2,7 +2,7 @@ name := "aws-s3-scala"
 
 organization := "jp.co.bizreach"
 
-version := "0.0.2"
+version := "0.0.3-SNAPSHOT"
 
 scalaVersion := "2.11.2"
 
