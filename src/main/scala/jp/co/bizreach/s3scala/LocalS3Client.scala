@@ -4,7 +4,7 @@ import awscala.s3.{PutObjectResult, Bucket}
 import awscala.s3.{S3 => AWScalaS3}
 import java.io.File
 import com.amazonaws.services.s3.model._
-import java.nio.file.Files
+import java.nio.file.{StandardCopyOption, Files}
 import org.joda.time.DateTime
 import scala.collection.JavaConverters._
 import com.amazonaws.metrics.RequestMetricCollector
@@ -127,7 +127,26 @@ private[s3scala] class LocalS3Client(dir: java.io.File) extends com.amazonaws.se
     IOUtils.deleteDirectory(bucketDir)
   }
 
-  override def copyObject(copyObjectRequest: CopyObjectRequest): CopyObjectResult = ???
+  override def copyObject(copyObjectRequest: CopyObjectRequest): CopyObjectResult = {
+    val srcBucketDir = new File(dir, copyObjectRequest.getSourceBucketName)
+    if(!srcBucketDir.exists) throw new com.amazonaws.services.s3.model.AmazonS3Exception("All access to this object has been disabled")
+    val src = new File(srcBucketDir, copyObjectRequest.getSourceKey)
+    if(!src.exists) throw new com.amazonaws.services.s3.model.AmazonS3Exception("Source object not found")
+
+    val destBucketDir = new File(dir, copyObjectRequest.getDestinationBucketName)
+    if(!destBucketDir.exists) throw new com.amazonaws.services.s3.model.AmazonS3Exception("All access to this object has been disabled")
+    val dest = new File(destBucketDir, copyObjectRequest.getDestinationKey)
+
+    // Make all directories
+    val parentDir = dest.getParentFile
+    if(!parentDir.exists){
+      parentDir.mkdirs()
+    }
+
+    // Copy file
+    Files.copy(src.toPath, dest.toPath, StandardCopyOption.REPLACE_EXISTING)
+    new CopyObjectResult
+  }
 
   override def copyPart(copyPartRequest: CopyPartRequest): CopyPartResult = ???
 
