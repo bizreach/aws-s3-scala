@@ -61,6 +61,9 @@ private[s3scala] class LocalS3Client(dir: java.io.File) extends com.amazonaws.se
       s3object.setBucketName(bucketName)
       s3object.setKey(key)
       s3object.setObjectContent(IOUtils.toInputStream(getFile))
+      val metadata = new ObjectMetadata()
+      metadata.setContentLength(getFile.length)
+      s3object.setObjectMetadata(metadata)
       s3object
     }
   }
