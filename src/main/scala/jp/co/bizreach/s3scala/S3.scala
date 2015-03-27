@@ -1,6 +1,7 @@
 package jp.co.bizreach.s3scala
 
 import awscala.CredentialsProvider
+import awscala.s3.S3Client
 
 object S3 {
 
@@ -18,6 +19,16 @@ object S3 {
 
   def local(dir: java.io.File): awscala.s3.S3 = {
     new LocalS3Client(dir)
+  }
+
+  def async()(implicit region: awscala.Region): S3AsyncClient = {
+    val client = awscala.s3.S3()
+    new S3AsyncClient(client.asInstanceOf[S3Client])
+  }
+
+  def async(accessKeyId: String, secretAccessKey: String)(implicit region: awscala.Region): S3AsyncClient = {
+    val client = awscala.s3.S3(accessKeyId, secretAccessKey)
+    new S3AsyncClient(client.asInstanceOf[S3Client])
   }
 
 }
