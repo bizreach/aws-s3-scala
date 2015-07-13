@@ -26,7 +26,7 @@ publishArtifact in Test := false
 pomIncludeRepository := { _ => false }
 
 pomExtra := (
-  <url>https://github.com/bizreach/s3scala-scala</url>
+  <url>https://github.com/bizreach/aws-s3-scala</url>
     <licenses>
       <license>
         <name>The Apache Software License, Version 2.0</name>
@@ -34,14 +34,20 @@ pomExtra := (
       </license>
     </licenses>
     <scm>
-      <url>https://github.com/bizreach/s3-scala</url>
-      <connection>scm:git:https://github.com/bizreach/s3-scala.git</connection>
+      <url>https://github.com/bizreach/aws-s3-scala</url>
+      <connection>scm:git:https://github.com/bizreach/aws-s3-scala.git</connection>
     </scm>
     <developers>
       <developer>
         <id>takezoe</id>
         <name>Naoki Takezoe</name>
         <email>naoki.takezoe_at_bizreach.co.jp</email>
+        <timezone>+9</timezone>
+      </developer>
+      <developer>
+        <id>tanacasino</id>
+        <name>Tomofumi Tanaka</name>
+        <email>tomofumi.tanaka_at_bizreach.co.jp</email>
         <timezone>+9</timezone>
       </developer>
     </developers>)
