@@ -1,11 +1,11 @@
-s3-scala
+aws-s3-scala
 ==========
 
-Scala client for AWS S3
+Scala client for Amazon S3
 
 ## How to use
 
-Add a following dependency into your build.sbt at first.
+Add a following dependency into your `build.sbt` at first.
 
 ```scala
 libraryDependencies += "jp.co.bizreach" %% "aws-s3-scala" % "0.0.3"
