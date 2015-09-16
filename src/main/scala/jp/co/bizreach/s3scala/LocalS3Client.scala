@@ -153,53 +153,31 @@ private[s3scala] class LocalS3Client(dir: java.io.File) extends com.amazonaws.se
       path =>
         new S3ObjectSummary(){
           {
-            val buf =
-              new ByteArrayOutputStream(){
-                {
-                  val is = Files.newInputStream(path)
-                  @tailrec
-                  def read(
-                    is: InputStream,
-                    pastRead: Int
-                  ): Unit = {
-                    if(pastRead > 0){
-                      write(pastRead)
-                      read(is, is.read)
-                    }
-                  }
-
-                  try{
-                    read(is, is.read)
-                  }finally{
-                    is.close()
-                  }
-                }
-              }
             val attributes =
               Files.readAttributes(
                 path,
                 classOf[BasicFileAttributes]
               )
 
-            try{
-              setBucketName(listObjectsRequest.getBucketName)
-              setKey(listObjectsRequest.getPrefix + path.getFileName.toString)
-              setETag(
-                Hex.encodeHex(
-                  java.security.MessageDigest.getInstance("MD5")
-                    .digest(buf.toByteArray)
-                ).mkString
-              )
-              setSize(attributes.size)
-              setLastModified(
-                new java.util.Date(
-                  attributes.lastModifiedTime
-                    .toMillis
+            setBucketName(listObjectsRequest.getBucketName)
+            setKey(listObjectsRequest.getPrefix + path.getFileName.toString)
+            setETag(
+              Hex.encodeHex(
+                java.security.MessageDigest.getInstance("MD5")
+                .digest(
+                  IOUtils.toBytes(
+                    Files.newInputStream(path)
+                  )
                 )
+              ).mkString
+            )
+            setSize(attributes.size)
+            setLastModified(
+              new java.util.Date(
+                attributes.lastModifiedTime
+                .toMillis
               )
-            }finally {
-              buf.close()
-            }
+            )
           }
         }
     }.toList
