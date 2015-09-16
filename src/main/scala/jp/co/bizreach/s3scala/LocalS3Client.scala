@@ -1,13 +1,18 @@
 package jp.co.bizreach.s3scala
 
-import awscala.s3.{PutObjectResult, Bucket}
-import awscala.s3.{S3 => AWScalaS3}
-import java.io.File
-import com.amazonaws.services.s3.model._
-import java.nio.file.{StandardCopyOption, Files}
-import org.joda.time.DateTime
-import scala.collection.JavaConverters._
+import java.io.{BufferedInputStream, ByteArrayOutputStream, File, InputStream}
+import java.nio.file.attribute.BasicFileAttributes
+import java.nio.file.{Files, Path, Paths, StandardCopyOption}
+
+import awscala.s3.{Bucket, PutObjectResult, S3 => AWScalaS3}
 import com.amazonaws.metrics.RequestMetricCollector
+import com.amazonaws.services.s3.model._
+import org.apache.commons.codec.binary.Hex
+import org.joda.time.DateTime
+
+import scala.annotation.tailrec
+import scala.collection.JavaConverters._
+import scala.util.{Failure, Success, Try}
 
 /**
  * Mock implementation of S3 client which works on the local file system.
@@ -68,7 +73,117 @@ private[s3scala] class LocalS3Client(dir: java.io.File) extends com.amazonaws.se
     }
   }
 
-  override def listObjects(listObjectsRequest: ListObjectsRequest): ObjectListing = ???
+  override def listObjects(
+    listObjectsRequest: ListObjectsRequest
+  ): ObjectListing = {
+    new ObjectListing(){
+      {
+        val (baseCommonPrefixes, baseObjectSummaries) =
+          createBaseTuple(
+            dir,
+            listObjectsRequest
+          )
+
+        setBucketName(listObjectsRequest.getBucketName)
+        setPrefix(listObjectsRequest.getPrefix)
+        setMarker(listObjectsRequest.getMarker)
+        //引数の型がprimitiveなのでnullチェックを追加している
+        setMaxKeys(if(listObjectsRequest.getMaxKeys == null) 0 else listObjectsRequest.getMaxKeys)
+        setDelimiter(listObjectsRequest.getDelimiter)
+        setEncodingType(listObjectsRequest.getEncodingType)
+        getCommonPrefixes
+          .addAll(
+            createCommonPrefixes(
+              listObjectsRequest,
+              baseCommonPrefixes
+            )
+          )
+        getObjectSummaries
+          .addAll(
+            createObjectSummaries(
+              listObjectsRequest,
+              baseObjectSummaries
+            )
+          )
+        setTruncated(false)
+      }
+    }
+  }
+
+  private[this] def createBaseTuple(
+    dir: File,
+    listObjectsRequest: ListObjectsRequest
+  ): (Iterator[Path], Iterator[Path]) = {
+    Try(
+      Files.list(
+        Paths.get(
+          dir.getAbsolutePath,
+          listObjectsRequest.getBucketName,
+          listObjectsRequest.getPrefix
+        )
+      )
+    ) match {
+      case Success(s) =>
+        s.iterator
+          .asScala
+          .partition(_.toFile.isDirectory && listObjectsRequest.getDelimiter != null)
+      case Failure(t) =>
+        (Iterator.empty, Iterator.empty)
+    }
+  }
+
+  private[this] def createCommonPrefixes(
+    listObjectsRequest: ListObjectsRequest,
+    baseCommonPrefixes: Iterator[Path]
+  ): java.util.List[String] = {
+    baseCommonPrefixes.map(
+      cp =>
+        s"${listObjectsRequest.getPrefix}${cp.getFileName.toString}${listObjectsRequest.getDelimiter}"
+    ).toList
+      .distinct
+      .sorted
+      .asJava
+  }
+
+  private[this] def createObjectSummaries(
+    listObjectsRequest: ListObjectsRequest,
+    baseObjectSummaries: Iterator[Path]
+  ): java.util.List[S3ObjectSummary] = {
+    baseObjectSummaries.map{
+      path =>
+        new S3ObjectSummary(){
+          {
+            val attributes =
+              Files.readAttributes(
+                path,
+                classOf[BasicFileAttributes]
+              )
+
+            setBucketName(listObjectsRequest.getBucketName)
+            setKey(listObjectsRequest.getPrefix + path.getFileName.toString)
+            setETag(
+              Hex.encodeHex(
+                java.security.MessageDigest.getInstance("MD5")
+                .digest(
+                  IOUtils.toBytes(
+                    Files.newInputStream(path)
+                  )
+                )
+              ).mkString
+            )
+            setSize(attributes.size)
+            setLastModified(
+              new java.util.Date(
+                attributes.lastModifiedTime
+                .toMillis
+              )
+            )
+          }
+        }
+    }.toList
+      .distinct
+      .asJava
+  }
 
   override def getS3AccountOwner(): Owner = ???
 
