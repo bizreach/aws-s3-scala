@@ -31,8 +31,6 @@ private[s3scala] class LocalS3Client(dir: java.io.File) extends com.amazonaws.se
   override def putObject(putObjectRequest: PutObjectRequest): PutObjectResult = {
     val bucketName = putObjectRequest.getBucketName
     val key  = putObjectRequest.getKey
-    val file = putObjectRequest.getFile
-
     val bucketDir = new File(dir, bucketName)
     if(!bucketDir.exists){
       throw new com.amazonaws.services.s3.model.AmazonS3Exception("All access to this object has been disabled")
@@ -43,7 +41,12 @@ private[s3scala] class LocalS3Client(dir: java.io.File) extends com.amazonaws.se
     if(!parentDir.exists){
       parentDir.mkdirs()
     }
-    Files.copy(file.toPath, putFile.toPath)
+
+    if(putObjectRequest.getFile != null) {
+      Files.copy(putObjectRequest.getFile.toPath, putFile.toPath)
+    } else {
+      IOUtils.write(putFile, IOUtils.toBytes(putObjectRequest.getInputStream))
+    }
 
     // TODO set correct property value
     awscala.s3.PutObjectResult(new Bucket(bucketName), key, null, null, null, DateTime.now(), null, null)

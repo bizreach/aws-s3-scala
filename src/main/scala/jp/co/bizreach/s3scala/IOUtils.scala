@@ -44,6 +44,15 @@ private[s3scala] object IOUtils {
     }
   }
 
+  def write(file: File, bytes: Array[Byte]): Unit = {
+    val out = new FileOutputStream(file)
+    try {
+      out.write(bytes)
+    } finally {
+      out.close()
+    }
+  }
+
   def deleteDirectory(dir: File): Unit = {
     dir.listFiles.foreach { file =>
       if(file.isDirectory){
