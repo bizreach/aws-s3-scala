@@ -2,21 +2,25 @@ name := "aws-s3-scala"
 
 organization := "jp.co.bizreach"
 
-version := "0.0.8"
+version := "0.0.9-SNAPSHOT"
 
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.0"
+
+crossScalaVersions := Seq("2.11.8", "2.12.0")
 
 libraryDependencies ++= Seq(
   "com.github.seratch" %% "awscala"   % "0.5.5",
-  "org.scalatest"      %% "scalatest" % "2.2.6" % "test"
+  "org.scalatest"      %% "scalatest" % "3.0.0" % "test"
 )
 
 publishMavenStyle := true
 
-publishTo <<= version { (v: String) =>
+publishTo := {
   val nexus = "https://oss.sonatype.org/"
-  if (v.trim.endsWith("SNAPSHOT")) Some("snapshots" at nexus + "content/repositories/snapshots")
-  else                             Some("releases"  at nexus + "service/local/staging/deploy/maven2")
+  if (version.value.trim.endsWith("SNAPSHOT"))
+    Some("snapshots" at nexus + "content/repositories/snapshots")
+  else
+    Some("releases"  at nexus + "service/local/staging/deploy/maven2")
 }
 
 scalacOptions := Seq("-deprecation")
