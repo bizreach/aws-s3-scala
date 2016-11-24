@@ -9,7 +9,7 @@ scalaVersion := "2.12.0"
 crossScalaVersions := Seq("2.11.8", "2.12.0")
 
 libraryDependencies ++= Seq(
-  "com.github.seratch" %% "awscala"   % "0.5.5",
+  "com.github.seratch" %% "awscala"   % "0.5.9",
   "org.scalatest"      %% "scalatest" % "3.0.0" % "test"
 )
 
