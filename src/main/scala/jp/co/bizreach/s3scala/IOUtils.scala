@@ -64,4 +64,22 @@ private[s3scala] object IOUtils {
     dir.delete()
   }
 
+  def serializeObject(obj: Serializable, file: File) = {
+    val out = new ObjectOutputStream(new FileOutputStream(file))
+    try {
+      out.writeObject(obj)
+    } finally {
+      out.close()
+    }
+  }
+
+  def deserializeObject[T](file: File): T = {
+    val in = new ObjectInputStream(new FileInputStream(file))
+    try {
+      in.readObject().asInstanceOf[T]
+    } finally {
+      in.close()
+    }
+  }
+
 }

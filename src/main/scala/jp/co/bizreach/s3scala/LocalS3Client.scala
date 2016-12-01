@@ -7,6 +7,7 @@ import java.nio.file.{Files, Path, Paths, StandardCopyOption}
 import awscala.s3.{Bucket, PutObjectResult, S3 => AWScalaS3}
 import com.amazonaws.metrics.RequestMetricCollector
 import com.amazonaws.services.s3.model._
+import com.amazonaws.util.json.JSONUtils
 import org.apache.commons.codec.binary.Hex
 import org.joda.time.DateTime
 
@@ -47,10 +48,17 @@ private[s3scala] class LocalS3Client(dir: java.io.File) extends com.amazonaws.se
     } else {
       IOUtils.write(putFile, IOUtils.toBytes(putObjectRequest.getInputStream))
     }
+    if(putObjectRequest.getMetadata != null){
+      val meta = putObjectRequest.getMetadata
+      val metaFile = new File(putFile.getParentFile, putFile.getName + ".meta")
+      IOUtils.serializeObject(meta, metaFile)
+    }
 
     // TODO set correct property value
     awscala.s3.PutObjectResult(new Bucket(bucketName), key, null, null, null, DateTime.now(), null, null)
   }
+
+
 
   override def getObject(getObjectRequest: GetObjectRequest): S3Object = {
     val bucketName = getObjectRequest.getBucketName
@@ -69,8 +77,17 @@ private[s3scala] class LocalS3Client(dir: java.io.File) extends com.amazonaws.se
       s3object.setBucketName(bucketName)
       s3object.setKey(key)
       s3object.setObjectContent(IOUtils.toInputStream(getFile))
-      val metadata = new ObjectMetadata()
-      metadata.setContentLength(getFile.length)
+
+      val metaFile = new File(getFile.getParentFile, getFile.getName + ".meta")
+
+      val metadata = if(metaFile.exists()){
+        IOUtils.deserializeObject[ObjectMetadata](metaFile)
+      } else {
+        val metadata = new ObjectMetadata()
+        metadata.setContentLength(getFile.length)
+        metadata
+      }
+
       s3object.setObjectMetadata(metadata)
       s3object
     }
@@ -277,6 +294,11 @@ private[s3scala] class LocalS3Client(dir: java.io.File) extends com.amazonaws.se
     val deleteFile = new File(bucketDir, deleteObjectRequest.getKey)
     if(deleteFile.exists){
       deleteFile.delete()
+    }
+
+    val metaFile = new File(deleteFile.getParentFile, deleteFile.getName + ".meta")
+    if(metaFile.exists()){
+      metaFile.delete()
     }
   }
 
