@@ -1,17 +1,16 @@
 package jp.co.bizreach.s3scala
 
-import java.io.{BufferedInputStream, ByteArrayOutputStream, File, InputStream}
+import java.io.File
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.{Files, Path, Paths, StandardCopyOption}
+import java.util
 
 import awscala.s3.{Bucket, PutObjectResult, S3 => AWScalaS3}
 import com.amazonaws.metrics.RequestMetricCollector
 import com.amazonaws.services.s3.model._
-import com.amazonaws.util.json.JSONUtils
 import org.apache.commons.codec.binary.Hex
 import org.joda.time.DateTime
 
-import scala.annotation.tailrec
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
@@ -50,6 +49,11 @@ private[s3scala] class LocalS3Client(dir: java.io.File) extends com.amazonaws.se
     }
     if(putObjectRequest.getMetadata != null){
       val meta = putObjectRequest.getMetadata
+
+      // TODO Remove this code in Scala 2.12.
+      // Replace with pure java map because the map returned by asJava is not serializable in Scala 2.11.
+      meta.setUserMetadata(toJavaMap(meta.getUserMetadata))
+
       val metaFile = new File(putFile.getParentFile, putFile.getName + ".meta")
       IOUtils.serializeObject(meta, metaFile)
     }
@@ -58,7 +62,11 @@ private[s3scala] class LocalS3Client(dir: java.io.File) extends com.amazonaws.se
     awscala.s3.PutObjectResult(new Bucket(bucketName), key, null, null, null, DateTime.now(), null, null)
   }
 
-
+  private def toJavaMap(map: util.Map[String, String]): util.Map[String, String] = {
+    val newMap = new util.HashMap[String, String]()
+    map.asScala.foreach { case (key, value) => newMap.put(key, value) }
+    newMap
+  }
 
   override def getObject(getObjectRequest: GetObjectRequest): S3Object = {
     val bucketName = getObjectRequest.getBucketName
