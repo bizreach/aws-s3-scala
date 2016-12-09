@@ -115,7 +115,7 @@ private[s3scala] class LocalS3Client(dir: java.io.File) extends com.amazonaws.se
         setBucketName(listObjectsRequest.getBucketName)
         setPrefix(listObjectsRequest.getPrefix)
         setMarker(listObjectsRequest.getMarker)
-        //引数の型がprimitiveなのでnullチェックを追加している
+        // Check null because argument type is primitive
         setMaxKeys(if(listObjectsRequest.getMaxKeys == null) 0 else listObjectsRequest.getMaxKeys)
         setDelimiter(listObjectsRequest.getDelimiter)
         setEncodingType(listObjectsRequest.getEncodingType)
@@ -256,9 +256,24 @@ private[s3scala] class LocalS3Client(dir: java.io.File) extends com.amazonaws.se
 
   override def setBucketAcl(bucketName: String, acl: CannedAccessControlList, requestMetricCollector: RequestMetricCollector): Unit = ???
 
-  override def getObjectMetadata(getObjectMetadataRequest: GetObjectMetadataRequest): ObjectMetadata = ???
+  override def getObjectMetadata(getObjectMetadataRequest: GetObjectMetadataRequest): ObjectMetadata = {
+    val bucketDir = new File(dir, getObjectMetadataRequest.getBucketName)
+    val file = new File(bucketDir, getObjectMetadataRequest.getKey)
+    if(!file.exists()){
+      throw new com.amazonaws.services.s3.model.AmazonS3Exception("Not Found")
+    } else {
+      val metaFile = new File(file.getParentFile, file.getName + ".meta")
+      if(metaFile.exists()){
+        IOUtils.deserializeObject[ObjectMetadata](metaFile)
+      } else {
+        val metadata = new ObjectMetadata()
+        metadata.setContentLength(file.length)
+        metadata
+      }
+    }
+  }
 
-  override def doesBucketExist(bucketName: String): Boolean = ???
+  override def doesBucketExist(bucketName: String): Boolean = new File(dir, bucketName).exists()
 
   override def getObject(getObjectRequest: GetObjectRequest, destinationFile: File): ObjectMetadata = ???
 
@@ -273,21 +288,27 @@ private[s3scala] class LocalS3Client(dir: java.io.File) extends com.amazonaws.se
   override def copyObject(copyObjectRequest: CopyObjectRequest): CopyObjectResult = {
     val srcBucketDir = new File(dir, copyObjectRequest.getSourceBucketName)
     if(!srcBucketDir.exists) throw new com.amazonaws.services.s3.model.AmazonS3Exception("All access to this object has been disabled")
-    val src = new File(srcBucketDir, copyObjectRequest.getSourceKey)
-    if(!src.exists) throw new com.amazonaws.services.s3.model.AmazonS3Exception("Source object not found")
+    val srcFile = new File(srcBucketDir, copyObjectRequest.getSourceKey)
+    if(!srcFile.exists) throw new com.amazonaws.services.s3.model.AmazonS3Exception("Source object not found")
 
     val destBucketDir = new File(dir, copyObjectRequest.getDestinationBucketName)
     if(!destBucketDir.exists) throw new com.amazonaws.services.s3.model.AmazonS3Exception("All access to this object has been disabled")
-    val dest = new File(destBucketDir, copyObjectRequest.getDestinationKey)
+    val destFile = new File(destBucketDir, copyObjectRequest.getDestinationKey)
 
     // Make all directories
-    val parentDir = dest.getParentFile
+    val parentDir = destFile.getParentFile
     if(!parentDir.exists){
       parentDir.mkdirs()
     }
 
     // Copy file
-    Files.copy(src.toPath, dest.toPath, StandardCopyOption.REPLACE_EXISTING)
+    Files.copy(srcFile.toPath, destFile.toPath, StandardCopyOption.REPLACE_EXISTING)
+
+    // Copy meta file
+    val srcMetaFile = new File(srcFile.getParentFile, srcFile.getName + ".meta")
+    val destMetaFile = new File(destFile.getParentFile, destFile.getName + ".meta")
+    Files.copy(srcMetaFile.toPath, destMetaFile.toPath, StandardCopyOption.REPLACE_EXISTING)
+
     new CopyObjectResult
   }
 
