@@ -2,15 +2,15 @@ name := "aws-s3-scala"
 
 organization := "jp.co.bizreach"
 
-version := "0.0.11"
+version := "0.0.12-SNAPSHOT"
 
-scalaVersion := "2.12.0"
+scalaVersion := "2.12.3"
 
-crossScalaVersions := Seq("2.11.8", "2.12.0")
+crossScalaVersions := Seq("2.11.8", scalaVersion.value)
 
 libraryDependencies ++= Seq(
-  "com.github.seratch" %% "awscala"   % "0.5.9",
-  "org.scalatest"      %% "scalatest" % "3.0.0" % "test"
+  "com.github.seratch" %% "awscala"   % "0.6.1",
+  "org.scalatest"      %% "scalatest" % "3.0.4" % "test"
 )
 
 publishMavenStyle := true
