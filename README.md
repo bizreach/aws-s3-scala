@@ -1,4 +1,4 @@
-aws-s3-scala
+aws-s3-scala [![Build Status](https://travis-ci.org/bizreach/aws-s3-scala.svg?branch=master)](https://travis-ci.org/bizreach/aws-s3-scala)
 ==========
 
 Scala client for Amazon S3
@@ -8,7 +8,7 @@ Scala client for Amazon S3
 Add a following dependency into your `build.sbt` at first.
 
 ```scala
-libraryDependencies += "jp.co.bizreach" %% "aws-s3-scala" % "0.0.11"
+libraryDependencies += "jp.co.bizreach" %% "aws-s3-scala" % "0.0.12"
 ```
 
 Then you can access S3 as following:
