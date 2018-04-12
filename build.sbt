@@ -1,11 +1,6 @@
 name := "aws-s3-scala"
-
 organization := "jp.co.bizreach"
-
-version := "0.0.13-SNAPSHOT"
-
 scalaVersion := "2.12.5"
-
 crossScalaVersions := Seq("2.11.12", scalaVersion.value)
 
 libraryDependencies ++= Seq(
@@ -13,45 +8,51 @@ libraryDependencies ++= Seq(
   "org.scalatest"      %% "scalatest" % "3.0.5" % "test"
 )
 
-publishMavenStyle := true
-
-publishTo := {
-  val nexus = "https://oss.sonatype.org/"
-  if (version.value.trim.endsWith("SNAPSHOT"))
-    Some("snapshots" at nexus + "content/repositories/snapshots")
-  else
-    Some("releases"  at nexus + "service/local/staging/deploy/maven2")
-}
-
 scalacOptions := Seq("-deprecation")
 
-publishArtifact in Test := false
-
-pomIncludeRepository := { _ => false }
-
 pomExtra := (
-  <url>https://github.com/bizreach/aws-s3-scala</url>
-    <licenses>
-      <license>
-        <name>The Apache Software License, Version 2.0</name>
-        <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      </license>
-    </licenses>
-    <scm>
-      <url>https://github.com/bizreach/aws-s3-scala</url>
-      <connection>scm:git:https://github.com/bizreach/aws-s3-scala.git</connection>
-    </scm>
-    <developers>
-      <developer>
-        <id>takezoe</id>
-        <name>Naoki Takezoe</name>
-        <email>naoki.takezoe_at_bizreach.co.jp</email>
-        <timezone>+9</timezone>
-      </developer>
-      <developer>
-        <id>tanacasino</id>
-        <name>Tomofumi Tanaka</name>
-        <email>tomofumi.tanaka_at_bizreach.co.jp</email>
-        <timezone>+9</timezone>
-      </developer>
-    </developers>)
+  <scm>
+    <url>https://github.com/bizreach/aws-s3-scala</url>
+    <connection>scm:git:https://github.com/bizreach/aws-s3-scala.git</connection>
+  </scm>
+  <developers>
+    <developer>
+      <id>takezoe</id>
+      <name>Naoki Takezoe</name>
+      <email>naoki.takezoe_at_bizreach.co.jp</email>
+      <timezone>+9</timezone>
+    </developer>
+    <developer>
+      <id>tanacasino</id>
+      <name>Tomofumi Tanaka</name>
+      <email>tomofumi.tanaka_at_bizreach.co.jp</email>
+      <timezone>+9</timezone>
+    </developer>
+  </developers>
+)
+
+publishArtifact in Test := false
+pomIncludeRepository := { _ => false }
+publishTo := sonatypePublishTo.value
+homepage := Some(url(s"https://github.com/bizreach/aws-s3-scala"))
+licenses := Seq("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0.html"))
+
+sonatypeProfileName := organization.value
+releasePublishArtifactsAction := PgpKeys.publishSigned.value
+releaseTagName := (version in ThisBuild).value
+releaseCrossBuild := true
+
+import ReleaseTransformations._
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies,
+  inquireVersions,
+  runTest,
+  setReleaseVersion,
+  commitReleaseVersion,
+  tagRelease,
+  publishArtifacts,
+  releaseStepCommand("sonatypeRelease"),
+  setNextVersion,
+  commitNextVersion,
+  pushChanges
+)
