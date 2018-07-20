@@ -5,7 +5,7 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.{Files, Path, Paths, StandardCopyOption}
 import java.util
 
-import awscala.s3.{Bucket, PutObjectResult, S3 => AWScalaS3}
+import awscala.s3.{Bucket, PutObjectResult, S3Client}
 import com.amazonaws.metrics.RequestMetricCollector
 import com.amazonaws.services.s3.model._
 import org.apache.commons.codec.binary.Hex
@@ -19,14 +19,12 @@ import scala.util.{Failure, Success, Try}
  *
  * @param dir the local root directory
  */
-private[s3scala] class LocalS3Client(dir: java.io.File) extends com.amazonaws.services.s3.AmazonS3Client() with AWScalaS3 {
+private[s3scala] class LocalS3Client(dir: java.io.File) extends S3Client(awscala.DefaultCredentialsProvider()) {
 
   // Create local root directory if it does not exist
   if(!dir.exists){
     dir.mkdirs()
   }
-
-  override def createBucket(name: String): Bucket = super[S3].createBucket(name)
 
   override def putObject(putObjectRequest: PutObjectRequest): PutObjectResult = {
     val bucketName = putObjectRequest.getBucketName
